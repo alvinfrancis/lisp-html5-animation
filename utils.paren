@@ -1,0 +1,251 @@
+;;;; utils.paren
+(defpackage :utils
+  (:use :parenscript))
+(setf (ps-package-prefix :utils) "utils.")
+
+;;; utils
+(defun utils::capture-mouse (element)
+  (with-make-object
+      mouse (create x 0 y 0 event null)
+      (let ((body-scroll-left (@ document body scroll-left))
+            (element-scroll-left (@ document document-element scroll-left))
+            (body-scroll-top (@ document body scroll-top))
+            (element-scroll-top (@ document document-element scroll-top))
+            (offset-left (@ element offset-left))
+            (offset-top (@ element offset-top)))
+        (progn
+          (chain element
+                 (add-event-listener
+                  "mousemove"
+                  (lambda (event)
+                    (let* ((x (- (if (@ event page-x) (@ event page-x)
+                                     (+ (@ event client-x)
+                                        body-scroll-left element-scroll-left))
+                                 offset-left))
+                           (y (- (if (@ event page-y) (@ event page-y)
+                                     (+ (@ event client-y)
+                                        body-scroll-top element-scroll-top))
+                                 offset-top)))
+                      (setf (@ mouse x) x)
+                      (setf (@ mouse y) y)
+                      (setf (@ mouse event) event)))
+                  false))))))
+(defun utils::capture-touch (element)
+  (with-make-object touch
+    (create x null
+            y null
+            is-pressed false
+            event null)
+    (let ((body-scroll-left (@ document body scroll-left))
+          (element-scroll-left (@ document document-element scroll-left))
+          (body-scroll-top (@ document body scroll-top))
+          (element-scroll-top (@ document document-element scroll-top))
+          (offset-left (@ element offset-left))
+          (offset-top (@ element offset-top)))
+      (with-pchain element
+        (add-event-listener
+         "touchstart"
+         (lambda (event)
+           (with-object-setf touch
+             is-pressed t
+             event event)))
+        (add-event-listener
+         "touchend"
+         (lambda (event)
+           (with-object-setf touch
+             is-pressed false
+             x null
+             y null
+             event event)))
+        (add-event-listener
+         "touchmove"
+         (lambda (event)
+           (let* ((touch-event (@ event touches 0))
+                  (x (- (if (@ touch-event page-x)
+                            (@ touch-event page-x)
+                            (+ (@ touch-event client-x)
+                               (@ body-scroll-left)
+                               (@ element-scroll-left)))
+                        offset-left))
+                  (y (- (if (@ touch-event page-y)
+                            (@ touch-event page-y)
+                            (+ (@ touch-event client-y)
+                               (@ body-scroll-top)
+                               (@ element-scroll-top)))
+                        offset-left)))
+             (with-object-setf touch
+               x x
+               y y
+               event event)))
+         false)))))
+(defun utils::parse-color (color &optional (to-number nil))
+  (if to-number
+      (cond
+        ((numberp color)
+         (logior color 0))
+        ((stringp color)
+         (parse-integer (subseq color 1) :radix 16))
+        (t (parse-integer color :radix 16)))
+      (if (numberp color)
+          (concatenate
+           'string
+           "#"
+           (let* ((suffix (concatenate
+                           'string
+                           "00000" (write-to-string (logior color 0) 16)))
+                  (length (length suffix)))
+             (subseq suffix (if (>= length 6)
+                                (- length 6)
+                                0))))
+          color)))
+(defun utils::color-to-r-g-b (color &optional (alpha 1))
+  (when (and (= (typeof color) "string")
+             (= (@ color 0) "#"))
+    (setf color (parse-integer (subseq (@ color) 1) :radix 16)))
+  (let ((r (logand (ash color -16) #xff))
+        (g (logand (ash color -8) #xff))
+        (b (logand color #xff))
+        (a (cond ((< alpha 0) 0)
+                 ((> alpha 1) 1) (t alpha))))
+    (if (= a 1)
+        (concatenate 'string
+                     "rgb(" r "," g "," b ")")
+        (concatenate 'string
+                     "rgba(" r "," g "," b "," a ")"))))
+(defun utils::contains-point (rect x y)
+  (let ((rx (@ rect x))
+        (ry (@ rect y))
+        (rwidth (@ rect width))
+        (rheight (@ rect height))))
+  (not (or (< x rx)
+           (> x (+ rx rwidth))
+           (< y ry)
+           (> y (+ ry rheight)))))
+(defun utils::intersects (rect-a rect-b)
+  (let ((comp (lambda (x y z)
+                (< (+ x y)
+                   z))))
+    (not (or (comp (@ rect-a x) (@ rect-a width)
+                   (@ rect-b x))
+             (comp (@ rect-b x) (@ rect-b width)
+                   (@ rect-a x))
+             (comp (@ rect-a y) (@ rect-a height)
+                   (@ rect-b y))
+             (comp (@ rect-b y) (@ rect-b height)
+                   (@ rect-a y))))))
+(defvar utils::keycode
+  (create
+   +BACKSPACE+ 8
+   +TAB+ 9
+   +ENTER+ 13
+   +COMMAND+ 15
+   +SHIFT+ 16
+   +CONTROL+ 17
+   +ALTERNATE+ 18
+   +PAUSE+ 19
+   +CAPS_LOCK+ 20
+   +NUMPAD+ 21
+   +ESCAPE+ 27
+   +SPACE+ 32
+   +PAGE_UP+ 33
+   +PAGE_DOWN+ 34
+   +END+ 35
+   +HOME+ 36
+
+   +LEFT+ 37
+   +UP+ 38
+   +RIGHT+ 39
+   +DOWN+ 40
+
+   +INSERT+ 45
+   +DELETE+ 46
+
+   +NUMBER_0+ 48
+   +NUMBER_1+ 49
+   +NUMBER_2+ 50
+   +NUMBER_3+ 51
+   +NUMBER_4+ 52
+   +NUMBER_5+ 53
+   +NUMBER_6+ 54
+   +NUMBER_7+ 55
+   +NUMBER_8+ 56
+   +NUMBER_9+ 57
+
+   +A+ 65
+   +B+ 66
+   +C+ 67
+   +D+ 68
+   +E+ 69
+   +F+ 70
+   +G+ 71
+   +H+ 72
+   +I+ 73
+   +J+ 74
+   +K+ 75
+   +L+ 76
+   +M+ 77
+   +N+ 78
+   +O+ 79
+   +P+ 80
+   +Q+ 81
+   +R+ 82
+   +S+ 83
+   +T+ 84
+   +U+ 85
+   +V+ 86
+   +W+ 87
+   +X+ 88
+   +Y+ 89
+   +Z+ 90
+
+   +LEFT_WINDOW_KEY+ 91
+   +RIGHT_WINDOW_KEY+ 92
+   +SELECT_KEY+ 93
+
+   +NUMPAD_0+ 96
+   +NUMPAD_1+ 97
+   +NUMPAD_2+ 98
+   +NUMPAD_3+ 99
+   +NUMPAD_4+ 100
+   +NUMPAD_5+ 101
+   +NUMPAD_6+ 102
+   +NUMPAD_7+ 103
+   +NUMPAD_8+ 104
+   +NUMPAD_9+ 105
+   +NUMPAD_MULTIPLY+ 106
+   +NUMPAD_ADD+ 107
+   +NUMPAD_ENTER+ 108
+   +NUMPAD_SUBTRACT+ 109
+   +NUMPAD_DECIMAL+ 110
+   +NUMPAD_DIVIDE+ 111
+
+   +F1+ 112
+   +F2+ 113
+   +F3+ 114
+   +F4+ 115
+   +F5+ 116
+   +F6+ 117
+   +F7+ 118
+   +F8+ 119
+   +F9+ 120
+   +F10+ 121
+   +F11+ 122
+   +F12+ 123
+   +F13+ 124
+   +F14+ 125
+   +F15+ 126
+
+   +NUM_LOCK+ 144
+   +SCROLL_LOCK+ 145
+
+   +SEMICOLON+ 186
+   +EQUAL+ 187
+   +COMMA+ 188
+   +MINUS+ 189
+   +PERIOD+ 190
+   +SLASH+ 191
+   +BACKQUOTE+ 192
+   +LEFTBRACKET+ 219
+   +BACKSLASH+ 220
+   +RIGHTBRACKET+ 221
+   +QUOTE+ 22))
