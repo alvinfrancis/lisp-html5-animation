@@ -1,7 +1,4 @@
 ;;;; utils.paren
-(defpackage :utils
-  (:use :parenscript))
-(setf (ps-package-prefix :utils) "utils.")
 
 ;;; utils
 (defun utils::capture-mouse (element)
@@ -133,7 +130,7 @@
                    (@ rect-b y))
              (comp (@ rect-b y) (@ rect-b height)
                    (@ rect-a y))))))
-(defvar utils::keycode
+(setf utils::keycode
   (create
    +BACKSPACE+ 8
    +TAB+ 9

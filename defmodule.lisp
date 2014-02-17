@@ -11,6 +11,9 @@
 (defparameter *static-directory*
   (merge-pathnames #P"static/" lisp-html5-animation-config:*base-directory*))
 
+(defparameter *paren-directory*
+  (merge-pathnames #P"paren/" *static-directory*))
+
 (sexml:with-compiletime-active-layers
     (sexml:standard-sexml sexml:xml-doctype)
   (sexml:support-dtd

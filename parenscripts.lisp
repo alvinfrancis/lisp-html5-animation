@@ -1,6 +1,13 @@
 ;;;; parenscripts
 (in-package :lisp-html5-animation)
 
+;;; namespaces
+;; Use parenscript namespace prefixing to create namespace
+;; objects. This requires the namespace objects to be created first.
+(defpackage :utils
+  (:use :parenscript))
+(setf (ps-package-prefix :utils) "utils.")
+
 ;;; utility scripts
 (setf                                   ; paren-utils
  *paren-utils*
