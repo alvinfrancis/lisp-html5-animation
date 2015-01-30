@@ -246,3 +246,8 @@
    +BACKSLASH+ 220
    +RIGHTBRACKET+ 221
    +QUOTE+ 22))
+
+(defun utils::evenp (list)
+  (loop for item in list
+     when (evenp item)
+     collect item))
