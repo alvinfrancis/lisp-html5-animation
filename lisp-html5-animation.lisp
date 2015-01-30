@@ -48,8 +48,8 @@
     (<:section
      :id "description"
      (<:p
-      (<:em "This is a recreation of the Foundation HTML5 Animation with
-      Javascript webpage in Common Lisp.")))
+      (<:em "This is a Common Lisp recreation of the Foundation HTML5
+      Animation with Javascript webpage")))
     (<:section
      :id "description"
      (<:p "This page contains all the samples, exercises and demo code from")
