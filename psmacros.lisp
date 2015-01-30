@@ -272,3 +272,7 @@ allow chaining like j-query."
 
 (defpsmacro request-animation-frame (&rest rest)
   `(-> window (request-animation-frame ,@rest)))
+
+(defpsmacro remove-if (predicate list)
+  "Map CL remove-if to JS filter"
+  `(-> ,list (filter ,predicate)))
