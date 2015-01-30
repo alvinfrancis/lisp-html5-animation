@@ -1,5 +1,5 @@
 ;;;; utility.lisp
-(in-package #:lisp-html5-animation)
+(in-package :lisp-html5-animation)
 
 (<:augment-with-doctype "html" "" :auto-emit-p t)
 

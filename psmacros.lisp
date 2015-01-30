@@ -4,7 +4,6 @@
 
 (in-package #:lisp-html5-animation)
 
-
 ;; Taken from arvid extensions
 (defpsmacro with-pchain (object &rest chains)
   "generate pseudo-chain of method calls of object. use in iterative code only.
@@ -51,6 +50,10 @@ allow chaining like j-query."
                                    ,(cdr x)))
                      (alexandria:plist-alist slot-pairs)))))
 ;;; my stuff
+
+(defpsmacro -> (&rest chain)
+  `(chain ,@chain))
+
 (defpsmacro console-log (object)
   `(chain console (log ,object)))
 
@@ -266,9 +269,6 @@ allow chaining like j-query."
   `(lambda ()
      (funcall (flet ((,name ,lambda-list
                        ,@body))))))
-
-(defpsmacro -> (&rest chain)
-  `(chain ,@chain))
 
 (defpsmacro request-animation-frame (&rest rest)
   `(-> window (request-animation-frame ,@rest)))
