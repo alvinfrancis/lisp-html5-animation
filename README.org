@@ -1,0 +1,12 @@
+* HTML5 Animation with Lisp
+
+  This is a an abandoned project trying to implement of [[http://lamberta.github.io/html5-animation/][Foundation
+  HTML5 Animation with Javascript]] using pure Common Lisp.  In
+  particular, this was attempted to test viability of parenscript
+  while learning basic animation in HTML5.
+
+  Used Common Lisp dependencies are:
+
+  - restas (Web Framework)
+  - sexml (HTML templating)
+  - parenscript (Common Lisp subset to Javascript compiler)
